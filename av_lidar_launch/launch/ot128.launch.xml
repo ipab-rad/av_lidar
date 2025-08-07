@@ -1,24 +1,17 @@
 <?xml version="1.0"?>
 <launch>
-  <arg name="sensor_model" default="OT128"/>
-  <arg name="rotation_speed" default="600" />
-
-  <arg name="launch_hw" default="true" description="Whether to connect to a real sensor (true) or to accept packet messages (false).">
-    <choice value="true" />
-    <choice value="false" />
-  </arg>
-  <arg name="config_file" default="$(find-pkg-share av_lidar_launch)/config/$(var sensor_model).param.yaml"/>
-
-  <node pkg="nebula_ros" exec="hesai_ros_wrapper_node" name="hesai_ros_wrapper_node" output="screen" namespace="ot128"  args="--ros-args --log-level info">
-    <param from="$(var config_file)" allow_substs="true"/>
+  <node pkg="nebula_ros" exec="hesai_ros_wrapper_node" name="hesai_ros_wrapper_node" output="screen" namespace="ot128" args="--ros-args --log-level info">
+    <param from="$(find-pkg-share av_lidar_launch)/config/OT128.param.yaml" allow_substs="true"/>
+    <param name="host_ip" value="172.31.5.1"/>
     <param name="sensor_ip" value="172.31.5.50"/>
     <param name="data_port" value="2368"/>
     <param name="frame_id" value="lidar_top"/>
-    <param name="launch_hw" value="$(var launch_hw)"/>
-    <param name="rotation_speed" value="$(var rotation_speed)"/>
+    <param name="launch_hw" value="true"/>
+    <param name="sync_angle" value="180"/>
+    <param name="sensor_model" value="Pandar128E4X"/>
+    <param name="rotation_speed" value="600"/>
     <remap from="pandar_points" to="/sensor/lidar/top/points"/>
     <remap from="aw_points" to="/sensor/lidar/top/aw_points"/>
     <remap from="aw_points_ex" to="/sensor/lidar/top/aw_points_ex"/>
   </node>
-
 </launch>

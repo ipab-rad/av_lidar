@@ -6,20 +6,7 @@ ENV NEBULA_VERSION=0.2.9
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
         apt-get -y --quiet --no-install-recommends install \
-        # git \
-        # gosu \
         wget \
-        # nlohmann-json3-dev \
-        # ros-"$ROS_DISTRO"-pcl-ros \
-        # ros-"$ROS_DISTRO"-tf2-eigen \
-        # ros-"$ROS_DISTRO"-mcap-vendor \
-        # ros-"$ROS_DISTRO"-rosbag2-storage-mcap \
-        # ros-"$ROS_DISTRO"-velodyne-msgs \
-        # ros-"$ROS_DISTRO"-udp-msgs \
-        # ros-"$ROS_DISTRO"-angles \
-        # ros-"$ROS_DISTRO"-diagnostic-updater \
-        # ros-"$ROS_DISTRO"-radar-msgs \
-        # ros-"$ROS_DISTRO"-can-msgs \
         # Install Cyclone DDS ROS RMW
         ros-"$ROS_DISTRO"-rmw-cyclonedds-cpp \
     && rm -rf /var/lib/apt/lists/*
@@ -43,21 +30,32 @@ COPY ./entrypoint.sh /
 
 # Download and setup Nebula Driver
 WORKDIR $ROS_WS/src
-RUN wget https://github.com/tier4/nebula/archive/refs/tags/v$NEBULA_VERSION.tar.gz
-RUN tar -xvzf v$NEBULA_VERSION.tar.gz
+RUN wget --progress=dot:giga https://github.com/tier4/nebula/archive/refs/tags/v$NEBULA_VERSION.tar.gz \
+    && tar -xvzf v$NEBULA_VERSION.tar.gz
 WORKDIR $ROS_WS/src/nebula-$NEBULA_VERSION
-RUN vcs import < build_depends.repos
-RUN apt-get update \
+RUN vcs import < build_depends.repos \
+    && apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
-        rosdep install --from-paths . --ignore-src -y -r
-WORKDIR $ROS_WS/src
+        rosdep install --from-paths . --ignore-src -y -r \
+    && rm -rf /var/lib/apt/lists/*
+
+# Source ROS setup for dependencies and build our code
+WORKDIR $ROS_WS
+RUN . /opt/ros/"$ROS_DISTRO"/setup.sh \
+    && colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 
 # -----------------------------------------------------------------------
 
 FROM base AS prebuilt
 
+# Copy nebula artifacts/binaries from base to avoid re-compiling them
+RUN mkdir -p "$ROS_WS"/install
+COPY --from=base $ROS_WS/install "$ROS_WS"/install
+RUN mkdir -p "$ROS_WS"/build
+COPY --from=base "$ROS_WS"/build "$ROS_WS"/build
+
 # Import av_lidar_launch
-COPY ./ $ROS_WS/src/av_lidar_launch
+COPY ./ "$ROS_WS"/src/av_lidar_launch
 
 # Source ROS setup for dependencies and build our code
 RUN . /opt/ros/"$ROS_DISTRO"/setup.sh \
@@ -67,8 +65,13 @@ RUN . /opt/ros/"$ROS_DISTRO"/setup.sh \
 
 FROM base AS dev
 
-# Copy artifacts/binaries from prebuilt
-COPY --from=prebuilt $ROS_WS/install $ROS_WS/install
+# Copy prebuild nebula ros driver from base
+RUN mkdir -p "$ROS_WS"/install
+COPY --from=base "$ROS_WS"/install "$ROS_WS"/install
+RUN mkdir -p "$ROS_WS"/build
+COPY --from=base "$ROS_WS"/build "$ROS_WS"/build
+RUN mkdir -p "$ROS_WS"/log
+COPY --from=base "$ROS_WS"/log "$ROS_WS"/log
 
 # Install basic dev tools (And clean apt cache afterwards)
 RUN apt-get update \
@@ -101,9 +104,15 @@ ENTRYPOINT [ "/entrypoint.sh" ]
 FROM base AS runtime
 
 # Copy artifacts/binaries from prebuilt
-COPY --from=prebuilt $ROS_WS/install $ROS_WS/install
+COPY --from=prebuilt "$ROS_WS"/src "$ROS_WS"/src
+COPY --from=prebuilt "$ROS_WS"/install "$ROS_WS"/install
+COPY --from=prebuilt "$ROS_WS"/build "$ROS_WS"/build
 
+# Add command to docker entrypoint to source newly compiled
+#   code when running docker container
+RUN sed --in-place --expression \
+        "\$isource \"$ROS_WS/install/setup.bash\" " \
+        /ros_entrypoint.sh
 
 # launch ros package
-ENTRYPOINT [ "/entrypoint.sh" ]
-
+CMD ["ros2", "launch", "av_lidar_launch", "all_lidars.launch.xml"]

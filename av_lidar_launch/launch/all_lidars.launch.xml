@@ -1,9 +1,11 @@
 <launch>
-
   <!-- Launch Top Lidar (OT128) -->
-  <include file="$(find-pkg-share av_lidar_launch)/launch/ot128.launch.xml"/>
+  <group>
+    <include file="$(find-pkg-share av_lidar_launch)/launch/ot128.launch.xml"/>
+  </group>
 
   <!-- Launch left, right and front Lidar (QT128) -->
-  <include file="$(find-pkg-share av_lidar_launch)/launch/qt128.launch.xml"/>
-  
+  <group>
+    <include file="$(find-pkg-share av_lidar_launch)/launch/qt128.launch.xml"/>
+  </group>
 </launch>
