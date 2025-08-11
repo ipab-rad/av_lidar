@@ -2,8 +2,8 @@
 Changelog for package av_lidar_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2025-08-11)
+------------------
 * Setup Hesai lidars (`#1 <https://github.com/ipab-rad/av_lidar/issues/1>`_)
   - Deprecate use of [nebula fork](https://github.com/ipab-rad/nebula) and
   instead wget release
