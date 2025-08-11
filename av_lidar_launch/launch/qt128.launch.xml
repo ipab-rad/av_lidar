@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="config_file" default="$(find-pkg-share av_lidar_launch)/config/QT128.param.yaml"/>
+
+  <node pkg="nebula_ros" exec="hesai_ros_wrapper_node" name="hesai_qt_right_driver" output="screen" namespace="qt_right">
+    <param from="$(var config_file)" allow_substs="true"/>
+    <param name="host_ip" value="172.31.6.1"/>
+    <param name="sensor_ip" value="172.31.6.51"/>
+    <param name="data_port" value="2369"/>
+    <param name="frame_id" value="lidar_right"/>
+    <param name="sync_angle" value="136"/>
+    <remap from="pandar_points" to="/sensor/lidar/right/points"/>
+    <remap from="aw_points" to="/sensor/lidar/right/aw_points"/>
+    <remap from="aw_points_ex" to="/sensor/lidar/right/aw_points_ex"/>
+  </node>
+
+  <node pkg="nebula_ros" exec="hesai_ros_wrapper_node" name="hesai_qt_left_driver" output="screen" namespace="qt_left">
+    <param from="$(var config_file)" allow_substs="true"/>
+    <param name="host_ip" value="172.31.7.1"/>
+    <param name="sensor_ip" value="172.31.7.52"/>
+    <param name="data_port" value="2370"/>
+    <param name="frame_id" value="lidar_left"/>
+    <param name="sync_angle" value="224"/>
+    <remap from="pandar_points" to="/sensor/lidar/left/points"/>
+    <remap from="aw_points" to="/sensor/lidar/left/aw_points"/>
+    <remap from="aw_points_ex" to="/sensor/lidar/left/aw_points_ex"/>
+  </node>
+
+  <node pkg="nebula_ros" exec="hesai_ros_wrapper_node" name="hesai_qt_front_driver" output="screen" namespace="qt_front">
+    <param from="$(var config_file)" allow_substs="true"/>
+    <param name="host_ip" value="172.31.8.1"/>
+    <param name="sensor_ip" value="172.31.8.53"/>
+    <param name="data_port" value="2371"/>
+    <param name="frame_id" value="lidar_front"/>
+    <param name="sync_angle" value="270"/>
+    <remap from="pandar_points" to="/sensor/lidar/front/points"/>
+    <remap from="aw_points" to="/sensor/lidar/front/aw_points"/>
+    <remap from="aw_points_ex" to="/sensor/lidar/front/aw_points_ex"/>
+  </node>
+</launch>
