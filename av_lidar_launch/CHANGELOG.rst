@@ -2,6 +2,11 @@
 Changelog for package av_lidar_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update nebula version to improve OT128 support (`#7 <https://github.com/ipab-rad/av_lidar/issues/7>`_)
+* Contributors: Alejandro Bordallo
+
 1.0.0 (2025-08-11)
 ------------------
 * Setup Hesai lidars (`#1 <https://github.com/ipab-rad/av_lidar/issues/1>`_)
