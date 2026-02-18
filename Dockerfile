@@ -1,6 +1,6 @@
 FROM ros:humble-ros-base-jammy AS base
 
-ENV NEBULA_VERSION=0.2.9
+ENV NEBULA_VERSION=0.2.15.3
 
 # Install basic dev tools (And clean apt cache afterwards)
 RUN apt-get update \
