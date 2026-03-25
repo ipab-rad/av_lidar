@@ -7,6 +7,7 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive \
         apt-get -y --quiet --no-install-recommends install \
         wget \
+        ros-"$ROS_DISTRO"-tf2-ros \
         # Install Zenoh ROS2 RMW
         ros-"$ROS_DISTRO"-rmw-zenoh-cpp \
     && rm -rf /var/lib/apt/lists/*
@@ -22,6 +23,14 @@ ENV RMW_IMPLEMENTATION=rmw_zenoh_cpp
 ENV RCUTILS_COLORIZED_OUTPUT=1
 
 COPY ./entrypoint.sh /
+
+# Clone Cloudini and install deps
+WORKDIR $ROS_WS/src
+RUN git clone https://github.com/facontidavide/cloudini.git \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive \
+        rosdep install --from-paths . --ignore-src -y -r \
+    && rm -rf /var/lib/apt/lists/*
 
 # Download and setup Nebula Driver
 WORKDIR $ROS_WS/src
